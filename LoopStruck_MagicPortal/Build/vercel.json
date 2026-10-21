@@ -1,0 +1,54 @@
+{
+  "headers": [
+    {
+      "source": "/Build/(.*).br",
+      "headers": [
+        {
+          "key": "Content-Encoding",
+          "value": "br"
+        }
+      ]
+    },
+    {
+      "source": "/Build/(.*).js.br",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        }
+      ]
+    },
+    {
+      "source": "/Build/(.*).data.br",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        }
+      ]
+    },
+    {
+      "source": "/Build/(.*).wasm.br",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/wasm"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/Build/:file((?!.*\\.br$).*\\.js)",
+      "destination": "/Build/:file.br"
+    },
+    {
+      "source": "/Build/:file((?!.*\\.br$).*\\.data)",
+      "destination": "/Build/:file.br"
+    },
+    {
+      "source": "/Build/:file((?!.*\\.br$).*\\.wasm)",
+      "destination": "/Build/:file.br"
+    }
+  ]
+}
