@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d5f816a48ff896488a2482e4ba89983, type: 3}
+  m_Name: AdManager
+  m_EditorClassIdentifier: 
+  isUnityPresent: 1
+  isAdmobPresent: 1
+  providerAdded:
+  - Unity
+  - Admob
+  adsEvents:
+  - gameEvent: 6
+    AddToCall: 1
+    everyLevel: 2
+    calls: 2
+  monitizationAds:
+  - providers: Admob
+    AdType: 1
+    Android_ID: ca-app-pub-3940256099942544/1033173712
+    IOS_ID: ca-app-pub-3940256099942544/1033173712
+  - providers: Admob
+    AdType: 2
+    Android_ID: ca-app-pub-3940256099942544/1033173712
+    IOS_ID: ca-app-pub-3940256099942544/1033173712
+  - providers: Unity
+    AdType: 1
+    Android_ID: Interstitial_Android
+    IOS_ID: Interstitial_iOS
+  - providers: Unity
+    AdType: 2
+    Android_ID: Rewarded_Android
+    IOS_ID: Rewarded_iOS
+  - providers: Unity
+    AdType: 0
+    Android_ID: Banner_Android
+    IOS_ID: Banner_iOS
+  AdmobAppID_Android: ca-app-pub-3940256099942544/1033173712
+  AdmobAppID_IOS: ca-app-pub-3940256099942544/1033173712
+  UnityAppID_Android: 3817421
+  UnityAppID_IOS: 3817420

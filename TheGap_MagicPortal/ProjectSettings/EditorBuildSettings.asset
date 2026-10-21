@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/TechJuego/GetOut/Scene/Splash.unity
+    guid: 7d6a513fb10aabb43a34add22fc3f3c2
+  - enabled: 1
+    path: Assets/TechJuego/GetOut/Scene/Game.unity
+    guid: 21e2cae833898e94ca7c4588cf97b94b
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: b63cb8b8b918b5c41be348f9e8826b38, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: a369ceb1d2afec94ab0e7a44a607f923, type: 2}

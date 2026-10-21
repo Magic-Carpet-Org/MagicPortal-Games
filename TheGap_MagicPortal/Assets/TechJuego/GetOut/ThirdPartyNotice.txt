@@ -1,0 +1,10 @@
+Get Out is governed by the Asset Store EULA; however, the following components are governed by the licenses indicated below:
+
+A. TextMesh Pro asset 
+    - Asset Store EULA
+    - License details available here: https://unity3d.com/es/legal/as_terms
+
+    
+B. Music
+    - Assets/Game/Audio/Music/Between Our Hearts.wav
+    - License details available in https://royaltyfreemusiclibrary.com/license
