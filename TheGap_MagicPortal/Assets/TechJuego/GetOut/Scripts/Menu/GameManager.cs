@@ -1,21 +1,12 @@
 using UnityEngine;
-using TechJuego.GetOut.Network;
+using UnityEngine.SceneManagement;
+using Kilimanjaro.Portals;
 
 namespace TechJuego.GetOut
 {
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance;
-
-        [Header("Restart API Settings")]
-        [Tooltip("Paste the UUID from Eniibukun here")]
-        public string gameId = "YOUR_GAME_UUID_HERE";
-
-        [Tooltip("Type 'practice' or 'tournament'")]
-        public string mode = "practice";
-
-        [Tooltip("Only required if mode is 'tournament'")]
-        public string tournamentId = "";
 
         [Header("Game Elements")]
         public Ball m_Ball;
@@ -25,7 +16,7 @@ namespace TechJuego.GetOut
         [Header("Game State")]
         private int _encryptedScore;
         private int _secretKey = 8492;
-        private bool isRestarting = false; // NEW: guards against duplicate "Play Again" clicks
+        private bool isRestarting = false; // guards against duplicate "Play Again" clicks
 
         public int Score
         {
@@ -42,22 +33,11 @@ namespace TechJuego.GetOut
             Instance = this;
             isGameEnded = false;
             scoreSubmitted = false;
-            isRestarting = false; // NEW: fresh scene load always starts unlocked
+            isRestarting = false; // fresh scene load always starts unlocked
             Score = 0;
 
-            // ==========================================
-            // NEW: FAKE SESSION ID & TOKEN FOR EDITOR TESTING
-            // ==========================================
-#if UNITY_EDITOR
-            if (string.IsNullOrEmpty(SplashScreen.GlobalSessionId))
-            {
-                SplashScreen.GlobalSessionId = "a7c3f92c-a19e-4fdb-8ceb-a866cefd468b";
-                SplashScreen.GlobalSessionToken = "EDITOR_TEST_JWT_TOKEN_12345";
-
-                Debug.Log("<color=magenta>[Editor Debug] Injected LIVE Session ID and Test Token!</color>");
-            }
-#endif
-            // ==========================================
+            // Editor testing against a real MagicGames session now lives in
+            // PortalSettings > Editor Test Session Id (PortalKit).
 
             if (Camera.main != null && m_BgColor.Length > 0)
             {
@@ -86,36 +66,12 @@ namespace TechJuego.GetOut
                 isGameEnded = true;
 
                 int finalScore = Score;
-                string sessionId = SplashScreen.GlobalSessionId;
 
-                Debug.Log($"<color=yellow>[GameManager] 3. Match Over. Session ID is: '{sessionId}'. Final Score: {finalScore}</color>");
+                Debug.Log($"<color=yellow>[GameManager] 3. Match Over on {PortalManager.Current.Name}. Final Score: {finalScore}</color>");
 
-                if (TechJuego.GetOut.Network.ApiManager.Instance == null)
-                {
-                    Debug.LogError("<color=red>[GameManager] FATAL: ApiManager.Instance is NULL! Did you start the game from the Splash scene?</color>");
-                    return;
-                }
-
-                if (!string.IsNullOrEmpty(sessionId))
-                {
-                    Debug.Log("<color=yellow>[GameManager] 4. Firing SubmitScore payload to ApiManager...</color>");
-
-                    TechJuego.GetOut.Network.ApiManager.Instance.SubmitScore(sessionId, finalScore, (success, response) =>
-                    {
-                        if (success)
-                        {
-                            Debug.Log($"<color=green>[GameManager] 5. SUCCESS! Score accepted by portal: {response}</color>");
-                        }
-                        else
-                        {
-                            Debug.LogError($"<color=red>[GameManager] 5. FAILED! Score submission rejected: {response}</color>");
-                        }
-                    });
-                }
-                else
-                {
-                    Debug.LogWarning("<color=orange>[GameManager] No active session ID found. Skipping submission.</color>");
-                }
+                // Submits the score to whichever portal we're on (MagicGames / Lagos Life)
+                // and starts fetching the next MagicGames session in the background.
+                PortalManager.GameOver(finalScore);
             }
             catch (System.Exception ex)
             {
@@ -125,37 +81,24 @@ namespace TechJuego.GetOut
 
         public void OnPlayAgainClicked()
         {
-            // NEW: block re-entrant clicks while a restart is already in flight
+            // block re-entrant clicks while a restart is already in flight
             if (isRestarting)
             {
                 Debug.LogWarning("<color=orange>[GameManager] 'Play Again' already processing. Ignoring duplicate click.</color>");
                 return;
             }
-            isRestarting = true; // NEW
+            isRestarting = true;
 
-            Debug.Log("<color=cyan>[GameManager] 'Play Again' clicked. Requesting fast restart via postMessage...</color>");
+            Debug.Log("<color=cyan>[GameManager] 'Play Again' clicked. Waiting for the portal's next run...</color>");
 
-            if (TechJuego.GetOut.Network.ApiManager.Instance == null)
-            {
-                Debug.LogError("<color=red>[GameManager] FATAL: ApiManager is missing!</color>");
-                isRestarting = false; // NEW: let them retry since nothing was actually sent
-                return;
-            }
+            // MagicGames: waits for the new session (usually already fetched by
+            // GameOver). Lagos Life / no portal: runs straight away.
+            PortalManager.PlayAgain(() => SceneManager.LoadSceneAsync("Game"));
 
-            // Fast path: postMessage REQUEST_RESTART -> portal replies RESTART_GAME
-            // -> StartPortalListener forwards it to OnPortalRestart, which still
-            // does one GET /game/init call before loading the Game scene, but skips
-            // the authenticated GET /game/session round-trip this used to start with.
-            TechJuego.GetOut.Network.ApiManager.Instance.RequestFastRestart();
-
-            // NOTE: isRestarting is intentionally never reset back to false here.
-            // A successful restart calls SceneManager.LoadSceneAsync("Game"), which
-            // tears down this GameManager instance; the new one runs Awake() fresh
-            // and resets isRestarting = false there. If RequestFastRestart's WebGL
-            // round-trip stalls or the portal never replies, the button stays
-            // disabled (see InGameUi) until the scene actually reloads, which is
-            // the correct behavior for "processing" — we don't want a second
-            // request racing the first one.
+            // isRestarting is intentionally never reset here. Loading the Game scene
+            // tears down this GameManager; the new one resets it in Awake(). If the
+            // MagicGames portal never replies, the button stays disabled (see InGameUi)
+            // rather than racing a second request against the first.
         }
     }
 }

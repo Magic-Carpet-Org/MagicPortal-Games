@@ -8,13 +8,15 @@ namespace TechJuego.GetOut
     {
         [SerializeField] private Button m_BackButton;
         [SerializeField] private SwitchButton m_SoundButton;
+        [Tooltip("Removed for web portals - hidden at runtime. Safe to delete from the scene.")]
         [SerializeField] private Button m_PrivacyPolicyButton;
         [SerializeField] private Button m_HomeButton;
         private void OnEnable()
         {
             Utility.SetButton(m_HomeButton, OnClickHomeButton);
             Utility.SetButton(m_BackButton, CloseSettingPannel);
-            Utility.SetButton(m_PrivacyPolicyButton, OpenPolicy);
+            // No external links on the web portals (MagicGames / Lagos Life).
+            if (m_PrivacyPolicyButton != null) m_PrivacyPolicyButton.gameObject.SetActive(false);
             m_SoundButton.Initialize(SoundSetting.SoundVariable);
             m_SoundButton.OnClicEvent.RemoveAllListeners();
             m_SoundButton.OnClicEvent.AddListener(Button_Sound);
@@ -32,11 +34,6 @@ namespace TechJuego.GetOut
         public void CloseSettingPannel()
         {
             gameObject.SetActive(false);
-            SoundEvents.OnPlaySingleShotSound?.Invoke("Click");
-        }
-        void OpenPolicy()
-        {
-            Application.OpenURL("https://techjuego.com/privacypolicy/");
             SoundEvents.OnPlaySingleShotSound?.Invoke("Click");
         }
     }

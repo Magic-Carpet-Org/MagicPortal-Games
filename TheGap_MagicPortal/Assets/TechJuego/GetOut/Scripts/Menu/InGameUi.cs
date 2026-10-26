@@ -11,7 +11,6 @@ namespace TechJuego.GetOut
     {
         [SerializeField] private GameObject m_HUDUI;
         [SerializeField] private Button m_SettingButton;
-        [SerializeField] private RateUsPopup m_RateUsPopup;
         [SerializeField] private TextMeshProUGUI m_CurrentScore;
         [SerializeField] private InGameSettingsPanel m_InGameSettingsPanel;
 
@@ -31,7 +30,6 @@ namespace TechJuego.GetOut
         private void Awake()
         {
             m_InGameSettingsPanel.gameObject.SetActive(false);
-            m_RateUsPopup.gameObject.SetActive(false);
 
             // Hide the Game Over panel when the level starts
             if (m_LevelFailPanel != null)
@@ -45,7 +43,6 @@ namespace TechJuego.GetOut
         private void OnEnable()
         {
             GameEvents.OnLevelFail += GameEvents_OnLevelFail;
-            GameEvents.OnShowRateUs += GameEvents_OnShowRateUs;
             GameEvents.OnLevelUpdate += GameEvents_OnLevelUpdate;
             Utility.SetButton(m_SettingButton, OnClickSettingButton);
 
@@ -60,7 +57,6 @@ namespace TechJuego.GetOut
         private void OnDisable()
         {
             GameEvents.OnLevelFail -= GameEvents_OnLevelFail;
-            GameEvents.OnShowRateUs -= GameEvents_OnShowRateUs;
             GameEvents.OnLevelUpdate -= GameEvents_OnLevelUpdate;
         }
 
@@ -83,15 +79,11 @@ namespace TechJuego.GetOut
             GameManager.Instance.OnPlayAgainClicked();
         }
 
-        private void GameEvents_OnShowRateUs()
-        {
-            m_RateUsPopup.gameObject.SetActive(true);
-        }
-
         private void GameEvents_OnLevelUpdate()
         {
             GameManager.Instance.Score += 1;
             m_CurrentScore.text = GameManager.Instance.Score.ToString();
+            Kilimanjaro.Portals.PortalManager.ReportProgress(GameManager.Instance.Score);
         }
 
         private void GameEvents_OnLevelFail()

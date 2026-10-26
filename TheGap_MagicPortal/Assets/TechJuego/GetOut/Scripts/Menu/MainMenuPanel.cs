@@ -2,7 +2,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using TechJuego.GetOut.Utils;
-using TechJuego.GetOut.Monetization;
 using TechJuego.GetOut.Sound;
 
 namespace TechJuego.GetOut
@@ -12,7 +11,7 @@ namespace TechJuego.GetOut
         public static MainMenuPanel Instance;
         public MenuPanel m_MenuPanel;
         public SettingsPannel m_SettingPanel;
-        
+
         private void Awake()
         {
             Instance = this;
@@ -22,7 +21,7 @@ namespace TechJuego.GetOut
             DataHandler.Instance.gameState = GameState.Menu;
             m_MenuPanel.gameObject.SetActive(true);
             m_SettingPanel.gameObject.SetActive(false);
-            
+
             SoundEvents.OnPlayLoopSound?.Invoke("BGMUSIC");
         }
     }

@@ -4,126 +4,89 @@ using UnityEngine.UI;
 using TechJuego.GetOut.Utils;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using System.Runtime.InteropServices;
-using TechJuego.GetOut.Network;
+using Kilimanjaro.Portals;
 
 namespace TechJuego.GetOut
 {
-	public class SplashScreen : MonoBehaviour
-	{
-		// Session ID and Token properties
-		public static string GlobalSessionId { get; set; }
+    public class SplashScreen : MonoBehaviour
+    {
+        // Time To wait After Scene is Loaded
+        [SerializeField] private float time;
 
-		// NEW: JWT Token storage so ApiManager can use it later
-		public static string GlobalSessionToken { get; set; }
+        private AsyncOperation scene;
 
-		// Time To wait After Scene is Loaded
-		[SerializeField] private float time;
+        // Loading Progress Text
+        [SerializeField] private TextMeshProUGUI m_LoadingText;
+        [SerializeField] private Slider m_LoadinImage;
 
-		private AsyncOperation scene;
+        private float progrss;
+        private bool apiFinished = false;
+        private bool apiSuccess = false;
 
-		// Loading Progress Text
-		[SerializeField] private TextMeshProUGUI m_LoadingText;
-		[SerializeField] private Slider m_LoadinImage;
+        IEnumerator Start()
+        {
+            // --- 1. WAIT FOR THE PORTAL (PortalKit) ---
+            // PortalKit reads the session from the URL, detects MagicGames or
+            // Lagos Life, and checks the MagicGames session with the backend.
+            // ok is false only if MagicGames rejected the session.
+            PortalManager.WhenReady(ok =>
+            {
+                apiSuccess = ok;
+                apiFinished = true;
 
-		private float progrss;
-		private bool apiFinished = false;
-		private bool apiSuccess = false;
+                if (ok)
+                    Debug.Log($"[SplashScreen] Portal ready: {PortalManager.Current.Name}");
+                else
+                    Debug.LogError("[SplashScreen] Portal Error: session was rejected.");
+            });
 
-		// --------------------------------------------------------
-		// WebGL Bridge Import
-		// --------------------------------------------------------
-#if UNITY_WEBGL && !UNITY_EDITOR
-        [DllImport("__Internal")]
-        private static extern string GetURLParameter(string paramName);
-#endif
+            // --- 2. START BACKGROUND SCENE LOAD ---
+            scene = SceneManager.LoadSceneAsync("Game");
+            scene.allowSceneActivation = false;
 
-		IEnumerator Start()
-		{
-			// --- 1. ESTABLISH SESSION ID & JWT TOKEN ---
-			// Only grab from the URL if the ID is empty (First Boot)
-			// If it's a soft restart, ApiManager already filled this variable.
-			if (string.IsNullOrEmpty(GlobalSessionId))
-			{
-				GlobalSessionId = "a7c3f92c-a19e-4fdb-8ceb-a866cefd468b"; // Editor Fallback Session
-				GlobalSessionToken = "EDITOR_TEST_JWT_TOKEN_12345"; // Editor Fallback Token
-
-#if UNITY_WEBGL && !UNITY_EDITOR
-                // Extract Session ID
-                string browserId = GetURLParameter("sessionId");
-                if (!string.IsNullOrEmpty(browserId))
+            while (!scene.isDone)
+            {
+                if (scene.progress >= .9f)
                 {
-                    GlobalSessionId = browserId;
+                    bool visualSweepDone = false;
+
+                    StartCoroutine(Utility.ChangeValue(0, 100, time, (value) =>
+                    {
+                        progrss = value;
+                        if (value >= 100)
+                        {
+                            visualSweepDone = true;
+                        }
+                    }));
+
+                    while (!visualSweepDone || !apiFinished)
+                    {
+                        yield return null;
+                    }
+
+                    if (apiSuccess)
+                    {
+                        scene.allowSceneActivation = true;
+                    }
+                    else
+                    {
+                        m_LoadingText.text = "Network Error!";
+                        Debug.LogError("[SplashScreen] Cannot start game. API Initialization Failed.");
+                    }
+                    break;
                 }
+                yield return null;
+            }
+        }
 
-                // Extract JWT Token
-                string browserToken = GetURLParameter("sessionToken");
-                if (!string.IsNullOrEmpty(browserToken))
-                {
-                    GlobalSessionToken = browserToken;
-                }
-#endif
-			}
+        private void Update()
+        {
+            if (m_LoadingText.text != "Network Error!")
+            {
+                m_LoadingText.text = (int)progrss + "%";
+            }
 
-			// --- 2. START PORTAL API CONNECTION ---
-			ApiManager.Instance.InitializeGame(GlobalSessionId, (success, response) =>
-				{
-					apiSuccess = success;
-					apiFinished = true;
-
-					if (success)
-						Debug.Log($"[SplashScreen] Connected to Portal! {response}");
-					else
-						Debug.LogError($"[SplashScreen] Portal Error: {response}");
-				});
-
-			// --- 3. START BACKGROUND SCENE LOAD ---
-			scene = SceneManager.LoadSceneAsync("Game");
-			scene.allowSceneActivation = false;
-
-			while (!scene.isDone)
-			{
-				if (scene.progress >= .9f)
-				{
-					bool visualSweepDone = false;
-
-					StartCoroutine(Utility.ChangeValue(0, 100, time, (value) =>
-						{
-							progrss = value;
-							if (value >= 100)
-							{
-								visualSweepDone = true;
-							}
-						}));
-
-					while (!visualSweepDone || !apiFinished)
-					{
-						yield return null;
-					}
-
-					if (apiSuccess)
-					{
-						scene.allowSceneActivation = true;
-					}
-					else
-					{
-						m_LoadingText.text = "Network Error!";
-						Debug.LogError("[SplashScreen] Cannot start game. API Initialization Failed.");
-					}
-					break;
-				}
-				yield return null;
-			}
-		}
-
-		private void Update()
-		{
-			if (m_LoadingText.text != "Network Error!")
-			{
-				m_LoadingText.text = (int)progrss + "%";
-			}
-
-			m_LoadinImage.value = (progrss / 100);
-		}
-	}
+            m_LoadinImage.value = (progrss / 100);
+        }
+    }
 }
