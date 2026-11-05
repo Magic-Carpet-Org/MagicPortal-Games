@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Kilimanjaro.Portals;
 
 public class UIController : MonoBehaviour
 {
@@ -39,6 +40,21 @@ public class UIController : MonoBehaviour
     ObstacleSpawner _spawner;
 
     BackgroundManager _backgroundManager;
+
+    // Guards against double taps on Restart while waiting for the portal.
+    bool restarting;
+
+    // Set by PlayAgainNow(): after the scene reloads, skip the menu and start playing.
+    static bool startImmediatelyAfterReload;
+
+    private void Start()
+    {
+        if (startImmediatelyAfterReload)
+        {
+            startImmediatelyAfterReload = false;
+            StartGame();
+        }
+    }
 
     private void OnEnable()
     {
@@ -134,11 +150,8 @@ public class UIController : MonoBehaviour
         playScore = playScore + ScoreFactor;
         scoreText.text = playScore.ToString();
 
-        // Push the real-time score to the iframe portal
-        if (PortalManager.Instance != null)
-        {
-            PortalManager.Instance.SendScoreUpdate(playScore);
-        }
+        // Live score for the portal (PortalKit throttles it via PortalSettings.progressStep)
+        PortalManager.ReportProgress(playScore);
     }
 
     public void GameOver()
@@ -159,25 +172,46 @@ public class UIController : MonoBehaviour
         scoreTextGameover.text = "Score : " + playScore.ToString();
         highScoreTextGameover.text = "High Score : " + GamePreferences.HighScore.ToString();
 
-        // Notify the portal and submit the REST POST payload
-        if (PortalManager.Instance != null)
-        {
-            PortalManager.Instance.SendMatchComplete(playScore);
-        }
+        // Submit the final score to whichever portal we're on (MagicGames / Lagos Life)
+        // and start fetching the next MagicGames session in the background.
+        PortalManager.GameOver(playScore);
     }
 
+    // ==========================================
+    // GAME OVER BUTTONS (wire these in the Button's On Click list)
+    // ==========================================
+
+    /// <summary>Game Over -> back to the main menu.</summary>
+    public void GoToMenu()
+    {
+        ReloadScene(false);
+    }
+
+    /// <summary>Game Over -> start a new run straight away (skips the menu).</summary>
+    public void PlayAgainNow()
+    {
+        ReloadScene(true);
+    }
+
+    /// <summary>Kept for buttons already wired to it: same as GoToMenu.</summary>
     public void RestartGame()
     {
-        // Ask the portal for a new session ID via postMessage
-        if (PortalManager.Instance != null)
+        ReloadScene(false);
+    }
+
+    void ReloadScene(bool startImmediately)
+    {
+        if (restarting) return;
+        restarting = true;
+
+        // MagicGames: waits for the new session (usually already fetched at Game Over).
+        // Lagos Life / no portal: reloads straight away.
+        PortalManager.PlayAgain(() =>
         {
-            PortalManager.Instance.RequestRestart();
-        }
-        else
-        {
+            startImmediatelyAfterReload = startImmediately;
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
+        });
     }
 
 

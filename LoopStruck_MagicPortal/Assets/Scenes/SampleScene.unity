@@ -1035,53 +1035,6 @@ MonoBehaviour:
   Sound: {fileID: 1938044341}
   Music: {fileID: 1742499885}
   HighScoreText: {fileID: 1425482219}
---- !u!1 &374374567
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 374374569}
-  - component: {fileID: 374374568}
-  m_Layer: 0
-  m_Name: Portal Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &374374568
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 374374567}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1251a626e6c115a4780c58772f98e51c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  baseApiUrl: https://game-portal-cyan.vercel.app/api/game
-  webhookSecret: 0d9916ac-630e-4c58-ba32-c6c30c1e2e8a
-  currentSessionId: aef93649-be28-491e-8947-b0a77d85f1e5
---- !u!4 &374374569
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 374374567}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &454733901
 GameObject:
   m_ObjectHideFlags: 0
@@ -1091,7 +1044,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 454733903}
-  - component: {fileID: 454733902}
+  - component: {fileID: 454733904}
   m_Layer: 0
   m_Name: UIControler
   m_TagString: Untagged
@@ -1099,27 +1052,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &454733902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 454733901}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d662d11fc8c6f2a4783d98bf749ae7d8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  MenuPanel: {fileID: 1008812798}
-  PausePanel: {fileID: 1927903372}
-  highScoreTextPause: {fileID: 1327587581}
-  scoreTextGameover: {fileID: 1853283964}
-  highScoreTextGameover: {fileID: 14599860}
-  GameoverPanel: {fileID: 143068464}
-  scoreText: {fileID: 1110832103}
-  TutorialText: {fileID: 1507706319}
-  ScoreFactor: 1
 --- !u!4 &454733903
 Transform:
   m_ObjectHideFlags: 0
@@ -1135,6 +1067,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &454733904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 454733901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96471dd3dcd4c24fabd50c76d07cfa2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MenuPanel: {fileID: 1008812798}
+  PausePanel: {fileID: 1927903372}
+  highScoreTextPause: {fileID: 1327587581}
+  scoreTextGameover: {fileID: 1853283964}
+  highScoreTextGameover: {fileID: 14599860}
+  GameoverPanel: {fileID: 143068464}
+  scoreText: {fileID: 1110832103}
+  TutorialText: {fileID: 1507706319}
+  ScoreFactor: 1
 --- !u!1 &473183196
 GameObject:
   m_ObjectHideFlags: 0
@@ -3165,9 +3118,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 454733902}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: RestartGame
+      - m_Target: {fileID: 454733904}
+        m_TargetAssemblyTypeName: UIController, Assembly-CSharp
+        m_MethodName: GoToMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5486,7 +5439,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 454733902}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: OnClickReview
         m_Mode: 1
@@ -6230,7 +6183,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 454733902}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: ResumeGame
         m_Mode: 1
@@ -6596,8 +6549,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 454733902}
-        m_TargetAssemblyTypeName: 
+      - m_Target: {fileID: 454733904}
+        m_TargetAssemblyTypeName: UIController, Assembly-CSharp
         m_MethodName: StartGame
         m_Mode: 1
         m_Arguments:
@@ -7941,7 +7894,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 454733902}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: 
         m_MethodName: RestartGame
         m_Mode: 1
@@ -8402,4 +8355,3 @@ SceneRoots:
   - {fileID: 307246540}
   - {fileID: 1464317809}
   - {fileID: 626407930}
-  - {fileID: 374374569}
