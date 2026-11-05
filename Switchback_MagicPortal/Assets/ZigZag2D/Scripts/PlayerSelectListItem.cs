@@ -1,77 +1,107 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using Kilimanjaro.Portals;
 
 namespace TunnelGame
 {
-	public class PlayerSelectListItem : MonoBehaviour
-	{
-		#region Inspector Variables
+    public class PlayerSelectListItem : MonoBehaviour
+    {
+        #region Inspector Variables
 
-		[SerializeField] private Image		iconImage;
-		[SerializeField] private Text		coinAmountText;
-		[SerializeField] private GameObject	unlockButton;
-		[SerializeField] private GameObject	selectButton;
-		[SerializeField] private Image		backgroundImage;
-		[SerializeField] private Color		normalColor		= Color.white;
-		[SerializeField] private Color		selectedColor	= Color.white;
+        [SerializeField] private Image iconImage;
+        [SerializeField] private Text coinAmountText;
+        [SerializeField] private GameObject unlockButton;
+        [SerializeField] private GameObject selectButton;
+        [SerializeField] private Image backgroundImage;
+        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color selectedColor = Color.white;
 
-		#endregion
+        #endregion
 
-		#region Member Variables
+        #region Member Variables
 
-		private int playerInfoIndex;
+        private int playerInfoIndex;
 
-		#endregion
+        #endregion
 
-		#region Unity Methods
+        #region Unity Methods
 
-		private void Update()
-		{
-			backgroundImage.color = (playerInfoIndex == GameManager.Instance.CurrentPlayerIndex) ? backgroundImage.color = selectedColor : normalColor;
-		}
+        private void Update()
+        {
+            backgroundImage.color = (playerInfoIndex == GameManager.Instance.CurrentPlayerIndex) ? backgroundImage.color = selectedColor : normalColor;
+        }
 
-		#endregion
+        #endregion
 
-		#region Public Methods
+        #region Public Methods
 
-		public void Setup(int playerInfoIndex)
-		{
-			this.playerInfoIndex = playerInfoIndex;
+        public void Setup(int playerInfoIndex)
+        {
+            this.playerInfoIndex = playerInfoIndex;
 
-			GameManager.PlayerInfo playerInfo = GameManager.Instance.PlayerInfos[playerInfoIndex];
+            GameManager.PlayerInfo playerInfo = GameManager.Instance.PlayerInfos[playerInfoIndex];
 
-			iconImage.sprite	= playerInfo.icon;
-			iconImage.color		= playerInfo.iconColor;
+            iconImage.sprite = playerInfo.icon;
+            iconImage.color = playerInfo.iconColor;
 
-			coinAmountText.text = playerInfo.unlockAmount.ToString();
+            coinAmountText.text = playerInfo.unlockAmount.ToString();
 
-			unlockButton.SetActive(playerInfo.locked);
-			selectButton.SetActive(!playerInfo.locked);
-		}
+            unlockButton.SetActive(playerInfo.locked);
+            selectButton.SetActive(!playerInfo.locked);
+        }
 
-		public void UnlockClicked()
-		{
-			GameManager.PlayerInfo playerInfo = GameManager.Instance.PlayerInfos[playerInfoIndex];
+        public void UnlockClicked()
+        {
+            // Lagos Life sells balls: let the player choose coins or a real-money unlock.
+            if (PortalManager.SupportsPurchases)
+            {
+                BallUnlockDialog.Show(playerInfoIndex, coinAmountText != null ? coinAmountText.font : null, UnlockWithCoins, UnlockPurchased);
+                return;
+            }
 
-			if (GameManager.Instance.DropsCollected >= playerInfo.unlockAmount)
-			{
-				GameManager.Instance.DropsCollected	-= playerInfo.unlockAmount;
-				GameManager.Instance.SwapPlayer(playerInfoIndex);
-				GameManager.Instance.UnlockedPlayerInfos += ";" + playerInfoIndex;
+            UnlockWithCoins();
+        }
 
-				playerInfo.locked = false;
-				
-				unlockButton.SetActive(playerInfo.locked);
-				selectButton.SetActive(!playerInfo.locked);
-			}
-		}
+        // The original coin unlock.
+        private void UnlockWithCoins()
+        {
+            GameManager.PlayerInfo playerInfo = GameManager.Instance.PlayerInfos[playerInfoIndex];
 
-		public void SelectClicked()
-		{
-			GameManager.Instance.SwapPlayer(playerInfoIndex);
-		}
+            if (GameManager.Instance.DropsCollected >= playerInfo.unlockAmount)
+            {
+                GameManager.Instance.DropsCollected -= playerInfo.unlockAmount;
+                MarkUnlocked(playerInfo);
+            }
+        }
 
-		#endregion
-	}
+        // Paid with real money on Lagos Life (already verified by our server): no coins spent.
+        private void UnlockPurchased()
+        {
+            GameManager.PlayerInfo playerInfo = GameManager.Instance.PlayerInfos[playerInfoIndex];
+
+            if (playerInfo.locked)
+            {
+                MarkUnlocked(playerInfo);
+            }
+        }
+
+        private void MarkUnlocked(GameManager.PlayerInfo playerInfo)
+        {
+            GameManager.Instance.SwapPlayer(playerInfoIndex);
+            GameManager.Instance.UnlockedPlayerInfos += ";" + playerInfoIndex;
+
+            playerInfo.locked = false;
+
+            unlockButton.SetActive(playerInfo.locked);
+            selectButton.SetActive(!playerInfo.locked);
+        }
+
+        public void SelectClicked()
+        {
+            GameManager.Instance.SwapPlayer(playerInfoIndex);
+        }
+
+        #endregion
+    }
 }

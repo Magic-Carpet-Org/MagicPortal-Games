@@ -114,6 +114,15 @@ namespace Kilimanjaro.Portals
             if (!restartPending) RequestRestart();
         }
 
+        // MagicGames has no payments in its current contract.
+        public bool SupportsPurchases { get { return false; } }
+        public bool HasUnclaimedPurchase(string productId) { return false; }
+
+        public void Purchase(string productId, Action<PortalPurchaseResult> onDone)
+        {
+            if (onDone != null) onDone(new PortalPurchaseResult { success = false, productId = productId, error = "not_supported" });
+        }
+
         public void RequestLeaderboard(Action<PortalLeaderboardEntry[]> onResult)
         {
             // No leaderboard endpoint in the current MagicGames contract.

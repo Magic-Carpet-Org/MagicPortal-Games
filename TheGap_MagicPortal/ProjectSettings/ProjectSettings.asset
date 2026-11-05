@@ -773,7 +773,7 @@ PlayerSettings:
     Android: ENABLE_UNITY_ADS;LEVELPLAY_DEPENDENCIES_INSTALLED
     PS4: 
     Standalone: 
-    WebGL: 
+    WebGL: USC_UNITY_PIPELINE_LEGACY
     Windows Store Apps: 
     iPhone: ENABLE_UNITY_ADS;ENABLE_PLAYFABADMIN_API
   additionalCompilerArguments: {}

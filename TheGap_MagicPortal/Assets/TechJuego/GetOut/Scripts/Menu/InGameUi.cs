@@ -14,6 +14,9 @@ namespace TechJuego.GetOut
         [SerializeField] private TextMeshProUGUI m_CurrentScore;
         [SerializeField] private InGameSettingsPanel m_InGameSettingsPanel;
 
+        [Tooltip("Second Chance offer shown when the ball dies (Lagos Life only). Leave empty to use the built-in panel.")]
+        [SerializeField] private SecondChancePanel m_SecondChancePanel;
+
         [Header("Game Over UI Settings")]
         // The canvas to hold your new Unity-controlled "Play Again" button
         [SerializeField] private GameObject m_LevelFailPanel;
@@ -31,6 +34,11 @@ namespace TechJuego.GetOut
         {
             m_InGameSettingsPanel.gameObject.SetActive(false);
 
+            if (m_SecondChancePanel != null)
+            {
+                m_SecondChancePanel.gameObject.SetActive(false);
+            }
+
             // Hide the Game Over panel when the level starts
             if (m_LevelFailPanel != null)
             {
@@ -44,6 +52,7 @@ namespace TechJuego.GetOut
         {
             GameEvents.OnLevelFail += GameEvents_OnLevelFail;
             GameEvents.OnLevelUpdate += GameEvents_OnLevelUpdate;
+            GameEvents.OnShowContinueGame += GameEvents_OnShowContinueGame;
             Utility.SetButton(m_SettingButton, OnClickSettingButton);
 
             // NEW: route Play Again through this class so we can disable it on click
@@ -58,6 +67,7 @@ namespace TechJuego.GetOut
         {
             GameEvents.OnLevelFail -= GameEvents_OnLevelFail;
             GameEvents.OnLevelUpdate -= GameEvents_OnLevelUpdate;
+            GameEvents.OnShowContinueGame -= GameEvents_OnShowContinueGame;
         }
 
         void OnClickSettingButton()
@@ -77,6 +87,17 @@ namespace TechJuego.GetOut
 
             SoundEvents.OnPlaySingleShotSound?.Invoke("Click");
             GameManager.Instance.OnPlayAgainClicked();
+        }
+
+        private void GameEvents_OnShowContinueGame()
+        {
+            if (m_SecondChancePanel == null)
+            {
+                // None wired in the Inspector: build the default one in code.
+                m_SecondChancePanel = SecondChancePanel.CreateDefault();
+            }
+
+            m_SecondChancePanel.gameObject.SetActive(true);
         }
 
         private void GameEvents_OnLevelUpdate()

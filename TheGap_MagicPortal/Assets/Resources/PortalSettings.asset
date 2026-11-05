@@ -17,3 +17,5 @@ MonoBehaviour:
   magicGamesWebhookSecret: 0de42f8c-0c16-48ca-9242-5e20be5223e1
   editorTestSessionId: a7c3f92c-a19e-4fdb-8ceb-a866cefd468b
   enableLagosLife: 1
+  lagosLifeClaimUrl: /api/lagos-claim
+  editorSimulatePurchases: 0

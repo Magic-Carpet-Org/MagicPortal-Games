@@ -126,6 +126,52 @@ namespace Kilimanjaro.Portals
             current.WaitForNextRun(onReady);
         }
 
+        /// <summary>True if the current portal can sell items (Lagos Life today).</summary>
+        public static bool SupportsPurchases
+        {
+            get
+            {
+#if UNITY_EDITOR
+                if (instance != null && instance.settings.editorSimulatePurchases) return true;
+#endif
+                return current.SupportsPurchases;
+            }
+        }
+
+        /// <summary>
+        /// True if the player already paid for productId but it wasn't delivered
+        /// (e.g. the game reloaded mid-purchase). Purchase() will use it for free.
+        /// </summary>
+        public static bool HasUnclaimedPurchase(string productId)
+        {
+            return current.HasUnclaimedPurchase(productId);
+        }
+
+        /// <summary>
+        /// Buys productId through the portal's own pay sheet, verified by your
+        /// server. Grant the item only when result.success is true.
+        /// </summary>
+        public static void Purchase(string productId, Action<PortalPurchaseResult> onDone)
+        {
+#if UNITY_EDITOR
+            if (instance != null && instance.settings.editorSimulatePurchases)
+            {
+                Debug.Log("[PortalManager] Purchase '" + productId + "' (simulated in Editor - no money involved)");
+                instance.StartCoroutine(SimulatePurchase(productId, onDone));
+                return;
+            }
+#endif
+            current.Purchase(productId, onDone);
+        }
+
+#if UNITY_EDITOR
+        private static System.Collections.IEnumerator SimulatePurchase(string productId, Action<PortalPurchaseResult> onDone)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            if (onDone != null) onDone(new PortalPurchaseResult { success = true, productId = productId, error = "" });
+        }
+#endif
+
         /// <summary>Fetches the leaderboard from the current portal (null if unsupported).</summary>
         public static void RequestLeaderboard(Action<PortalLeaderboardEntry[]> onResult)
         {

@@ -32,6 +32,13 @@ namespace Kilimanjaro.Portals
         [Tooltip("Turn off to never try Lagos Life for this game.")]
         public bool enableLagosLife = true;
 
+        [Tooltip("Your server endpoint that verifies and delivers Lagos Life purchases (see PortalKit/Server). A path like /api/lagos-claim is resolved against where the game is hosted.")]
+        public string lagosLifeClaimUrl = "/api/lagos-claim";
+
+        [Header("Editor")]
+        [Tooltip("Editor only: pretend purchases are available and succeed, so you can test purchase UI in Play mode. Never used in builds.")]
+        public bool editorSimulatePurchases = false;
+
         private static PortalSettings loaded;
 
         public static PortalSettings Load()

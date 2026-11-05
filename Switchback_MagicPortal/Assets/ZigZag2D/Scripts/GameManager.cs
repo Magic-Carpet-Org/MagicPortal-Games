@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Kilimanjaro.Portals;
 
 namespace TunnelGame
 {
@@ -96,10 +97,6 @@ namespace TunnelGame
         private Direction playerDirection;
         private Vector2 uvStartPoint;
 
-        // Portal integration: last score value broadcast via SCORE_UPDATE, and
-        // how big a change is required before broadcasting another one.
-        private int lastSentScore;
-        private const int scoreUpdateThreshold = 50;
 
         #endregion
 
@@ -180,7 +177,7 @@ namespace TunnelGame
             // Setup the game to be played
             Reset();
 
-            // Portal init (MagicGames / Lagos Life / none) is handled by PortalManager.
+            // Portal detection and init are handled by PortalKit (PortalManager).
         }
 
         private void Update()
@@ -217,12 +214,8 @@ namespace TunnelGame
             // The score is determined by the amount moved in the y direction multiplied by the scoreMultiplier rounded to an integer
             CurrentScore = Mathf.RoundToInt(-tunnelGameObject.transform.position.y * scoreMultiplier);
 
-            // Let the portal know about score milestones, but don't spam a postMessage every frame.
-            if (Mathf.Abs(CurrentScore - lastSentScore) >= scoreUpdateThreshold)
-            {
-                lastSentScore = CurrentScore;
-                PortalManager.Current.ReportProgress(CurrentScore);
-            }
+            // Live score for the portal (PortalKit throttles this itself).
+            PortalManager.ReportProgress(CurrentScore);
         }
 
         #endregion
@@ -238,7 +231,6 @@ namespace TunnelGame
         {
             // Set the current score to 0
             CurrentScore = 0;
-            lastSentScore = 0;
 
             // Clear the drop info
             drops.Clear();
@@ -533,8 +525,7 @@ namespace TunnelGame
             ChangeGameState(GameState.Over);
 
             // Whatever portal we're on handles the score and next-run prep.
-            PortalManager.Current.SubmitFinalScore(CurrentScore);
-            PortalManager.Current.RequestRestart();
+            PortalManager.GameOver(CurrentScore);
         }
 
         /// <summary>

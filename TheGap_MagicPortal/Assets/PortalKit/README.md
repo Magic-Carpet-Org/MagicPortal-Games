@@ -66,6 +66,41 @@ PortalManager.PlayAgain(() => SceneManager.LoadSceneAsync("Game"));
 
 Don't read `sessionId` from the URL or call portal APIs from game code - PortalKit owns that.
 
+### Purchases (Lagos Life)
+
+```csharp
+if (PortalManager.SupportsPurchases)          // false on MagicGames / no portal
+{
+    PortalManager.Purchase("second_chance", result =>
+    {
+        if (result.success) GrantItem();       // paid AND verified by your server
+        else if (result.Cancelled) { }         // player closed the pay sheet
+        else ShowError(result.error);
+    });
+}
+PortalManager.HasUnclaimedPurchase("second_chance") // paid earlier, not delivered yet -> next Purchase() is free
+```
+
+Lagos Life opens its own pay sheet (never draw your own) and pauses the game while it's open.
+After payment, **your server** must verify and deliver the purchase - the secret key can't be in the build.
+PortalKit ships that server as a Vercel function:
+
+1. Copy `PortalKit/Server~/api/lagos-claim.js` to `api/lagos-claim.js` at the root of the game's
+   Vercel deployment (next to `index.html` and `vercel.json`). Unity ignores the `Server~` folder.
+2. In Vercel > Project > Settings > Environment Variables add:
+   - `LAGOS_SECRET` = your Lagos Life secret (`vtr_test_...` now, `vtr_live_...` after approval)
+   - `LAGOS_PRODUCTS` = the product ids this game sells, comma-separated (e.g. `second_chance`)
+   Redeploy after changing them.
+3. Create the same product ids in the Lagos Life developer dashboard (price ₦100-₦50,000).
+4. `PortalSettings > Lagos Life Claim Url` defaults to `/api/lagos-claim` - leave it unless the
+   server lives somewhere else.
+
+Purchases that were paid but not delivered (reload, network drop, server down) are kept and
+delivered on the next `Purchase()` of the same product without charging again.
+
+Editor: tick `PortalSettings > Editor Simulate Purchases` to make purchases available and succeed
+after 1 second in Play mode (no money involved). Never used in builds.
+
 ### Testing MagicGames from the Editor
 
 Put a real MagicGames session id in `PortalSettings > Editor Test Session Id`.
@@ -115,8 +150,8 @@ On Vercel (`vercel.json`):
 
 - Lagos Life accepts one score every 20 s per player and keeps the best. If a
   run ends sooner, PortalKit holds the best score and sends it when allowed.
-- No Lagos Life secret is ever in the build. Lagos Life **purchases** need a
-  server to verify and deliver them; PortalKit doesn't do purchases yet.
+- No Lagos Life secret is ever in the build. Purchases are verified and
+  delivered by `Server~/api/lagos-claim.js` on your Vercel deployment.
 - The MagicGames webhook secret in `PortalSettings` does ship inside the WebGL
   build, so a player can forge scores. Moving that REST call to a server fixes it.
 

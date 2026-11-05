@@ -53,6 +53,18 @@ namespace Kilimanjaro.Portals
         // The same Lagos Life session covers every run, so the next run can start at once.
         public void WaitForNextRun(Action onReady) { if (onReady != null) onReady(); }
 
+        public bool SupportsPurchases { get { return true; } }
+
+        public bool HasUnclaimedPurchase(string productId)
+        {
+            return bridge.HasUnclaimed(productId);
+        }
+
+        public void Purchase(string productId, Action<PortalPurchaseResult> onDone)
+        {
+            bridge.Purchase(productId, PortalSettings.Load().lagosLifeClaimUrl, onDone);
+        }
+
         public void RequestLeaderboard(Action<PortalLeaderboardEntry[]> onResult)
         {
             leaderboardCallbacks.Enqueue(onResult);

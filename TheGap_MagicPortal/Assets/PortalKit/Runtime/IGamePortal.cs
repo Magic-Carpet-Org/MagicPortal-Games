@@ -18,6 +18,23 @@ namespace Kilimanjaro.Portals
         public int score;
     }
 
+    [Serializable]
+    public class PortalPurchaseResult
+    {
+        /// <summary>True only when the item was paid for AND verified/delivered server-side. Grant it now.</summary>
+        public bool success;
+        public string productId;
+
+        /// <summary>
+        /// Empty on success. Otherwise e.g. "cancelled" (player closed the pay sheet),
+        /// "busy", "payment_failed", "not_for_sale", "owned", "not_supported",
+        /// "claim_failed" (paid but our server couldn't verify yet - kept for retry).
+        /// </summary>
+        public string error;
+
+        public bool Cancelled { get { return error == "cancelled"; } }
+    }
+
     /// <summary>
     /// What a game needs from any web portal. Games normally don't use this
     /// directly - they call the static helpers on PortalManager.
@@ -59,6 +76,22 @@ namespace Kilimanjaro.Portals
         /// new session). Portals with nothing to wait for call it immediately.
         /// </summary>
         void WaitForNextRun(Action onReady);
+
+        /// <summary>True if this portal can sell items.</summary>
+        bool SupportsPurchases { get; }
+
+        /// <summary>
+        /// True if the player already paid for productId but it hasn't been
+        /// delivered yet (e.g. the game reloaded mid-purchase). The next
+        /// Purchase(productId) uses it instead of charging again.
+        /// </summary>
+        bool HasUnclaimedPurchase(string productId);
+
+        /// <summary>
+        /// Buys productId (opens the portal's own pay sheet). onDone fires once;
+        /// grant the item only if result.success is true.
+        /// </summary>
+        void Purchase(string productId, Action<PortalPurchaseResult> onDone);
 
         /// <summary>Fetches the leaderboard. onResult gets null if unsupported or failed.</summary>
         void RequestLeaderboard(Action<PortalLeaderboardEntry[]> onResult);

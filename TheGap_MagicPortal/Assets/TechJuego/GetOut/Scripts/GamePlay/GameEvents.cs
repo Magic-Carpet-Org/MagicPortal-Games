@@ -8,5 +8,6 @@ namespace TechJuego.GetOut
         public static OnAction OnLoadLevel;
         public static OnAction OnLevelFail;
         public static OnAction OnLevelUpdate;
+        public static OnAction OnShowContinueGame; // Second Chance offer (Lagos Life purchase)
     }
 }

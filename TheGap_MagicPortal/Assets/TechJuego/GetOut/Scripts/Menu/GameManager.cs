@@ -8,6 +8,15 @@ namespace TechJuego.GetOut
     {
         public static GameManager Instance;
 
+        [Header("Second Chance (Lagos Life purchase)")]
+        [Tooltip("Product id - must match the product created in the Lagos Life developer dashboard.")]
+        public string secondChanceProductId = "second_chance";
+
+        [Tooltip("How many Second Chances a player may buy in one run.")]
+        public int maxSecondChancesPerRun = 1;
+
+        private int secondChancesUsed;
+
         [Header("Game Elements")]
         public Ball m_Ball;
         public Effect m_Effect;
@@ -34,6 +43,7 @@ namespace TechJuego.GetOut
             isGameEnded = false;
             scoreSubmitted = false;
             isRestarting = false; // fresh scene load always starts unlocked
+            secondChancesUsed = 0;
             Score = 0;
 
             // Editor testing against a real MagicGames session now lives in
@@ -48,6 +58,35 @@ namespace TechJuego.GetOut
         private void Start()
         {
             DataHandler.Instance.gameState = GameState.CreateLevel;
+        }
+
+        // ==========================================
+        // SECOND CHANCE
+        // ==========================================
+
+        /// <summary>True if the ball just died and the player may buy a Second Chance.</summary>
+        public bool CanOfferSecondChance()
+        {
+            return PortalManager.SupportsPurchases
+                && !scoreSubmitted
+                && secondChancesUsed < maxSecondChancesPerRun;
+        }
+
+        /// <summary>Call only after a successful purchase: resumes the same run, score kept.</summary>
+        public void ContinueWithSecondChance()
+        {
+            secondChancesUsed++;
+            isGameEnded = false;
+
+            Debug.Log($"<color=green>[GameManager] Second Chance used ({secondChancesUsed}/{maxSecondChancesPerRun}). Continuing at score {Score}.</color>");
+
+            DataHandler.Instance.gameState = GameState.Playing;
+        }
+
+        /// <summary>Player skipped or the offer timed out: normal Game Over.</summary>
+        public void DeclineSecondChance()
+        {
+            DataHandler.Instance.gameState = GameState.LevelFail;
         }
 
         public void TriggerGameOver()

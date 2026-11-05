@@ -26,6 +26,14 @@ namespace Kilimanjaro.Portals
 
         public void WaitForNextRun(Action onReady) { if (onReady != null) onReady(); }
 
+        public bool SupportsPurchases { get { return false; } }
+        public bool HasUnclaimedPurchase(string productId) { return false; }
+
+        public void Purchase(string productId, Action<PortalPurchaseResult> onDone)
+        {
+            if (onDone != null) onDone(new PortalPurchaseResult { success = false, productId = productId, error = "not_supported" });
+        }
+
         public void RequestLeaderboard(Action<PortalLeaderboardEntry[]> onResult)
         {
             if (onResult != null) onResult(null);

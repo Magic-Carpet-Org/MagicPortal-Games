@@ -50,6 +50,7 @@ namespace Kilimanjaro.Portals
         [DllImport("__Internal")] private static extern void PKLL_Init();
         [DllImport("__Internal")] private static extern void PKLL_SubmitScore(int score);
         [DllImport("__Internal")] private static extern void PKLL_GetLeaderboard();
+        [DllImport("__Internal")] private static extern void PKLL_Purchase(string productId, string claimUrl);
 #endif
 
         #endregion
@@ -72,6 +73,9 @@ namespace Kilimanjaro.Portals
         private LagosPlayer player;
         private Action onConnected;
         private Action<string> onConnectFailed;
+
+        private Action<PortalPurchaseResult> onPurchaseDone;
+        private string[] unclaimedProductIds = new string[0];
 
         #endregion
 
@@ -143,9 +147,68 @@ namespace Kilimanjaro.Portals
 #endif
         }
 
+        /// <summary>
+        /// Opens the Lagos Life pay sheet for productId (or reuses an unclaimed paid
+        /// one), then has claimUrl (our server) verify and deliver it.
+        /// onDone fires exactly once.
+        /// </summary>
+        public void Purchase(string productId, string claimUrl, Action<PortalPurchaseResult> onDone)
+        {
+            if (!isConnected)
+            {
+                if (onDone != null) onDone(new PortalPurchaseResult { success = false, productId = productId, error = "not_ready" });
+                return;
+            }
+
+            if (onPurchaseDone != null)
+            {
+                if (onDone != null) onDone(new PortalPurchaseResult { success = false, productId = productId, error = "busy" });
+                return;
+            }
+
+            onPurchaseDone = onDone;
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+            PKLL_Purchase(productId, claimUrl);
+#else
+            OnLagosPurchaseResult(JsonUtility.ToJson(new PortalPurchaseResult { success = false, productId = productId, error = "not_webgl" }));
+#endif
+        }
+
+        public bool HasUnclaimed(string productId)
+        {
+            return Array.IndexOf(unclaimedProductIds, productId) >= 0;
+        }
+
         #endregion
 
         #region Incoming (called by LagosLifeBridge.jslib via SendMessage - keep names)
+
+        public void OnLagosPurchaseResult(string json)
+        {
+            PortalPurchaseResult result = JsonUtility.FromJson<PortalPurchaseResult>(json);
+
+            if (result.success)
+                Debug.Log("[LagosLifeBridge] Purchase delivered: " + result.productId);
+            else
+                Debug.Log("[LagosLifeBridge] Purchase not completed (" + result.productId + "): " + result.error);
+
+            Action<PortalPurchaseResult> cb = onPurchaseDone;
+            onPurchaseDone = null;
+            if (cb != null) cb(result);
+        }
+
+        [Serializable]
+        private class UnclaimedList { public string[] productIds; }
+
+        public void OnLagosUnclaimed(string json)
+        {
+            UnclaimedList list = JsonUtility.FromJson<UnclaimedList>(json);
+            unclaimedProductIds = (list != null && list.productIds != null) ? list.productIds : new string[0];
+
+            if (unclaimedProductIds.Length > 0)
+                Debug.Log("[LagosLifeBridge] Paid but not yet delivered: " + string.Join(", ", unclaimedProductIds));
+        }
 
         public void OnLagosInit(string json)
         {

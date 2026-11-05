@@ -28,8 +28,17 @@ namespace TechJuego.GetOut
                         GameEvents.OnLevelFail?.Invoke();
                         break;
                     case GameState.Contine:
-                        // INSTANT ROUTE: If the game tries to continue, instantly force a Level Fail instead!
-                        gameState = GameState.LevelFail;
+                        // Offer a paid Second Chance where the portal sells items (Lagos Life).
+                        // Everywhere else - or if it's already been used this run - go
+                        // straight to Game Over as before.
+                        if (GameManager.Instance != null && GameManager.Instance.CanOfferSecondChance() && GameEvents.OnShowContinueGame != null)
+                        {
+                            GameEvents.OnShowContinueGame.Invoke();
+                        }
+                        else
+                        {
+                            gameState = GameState.LevelFail;
+                        }
                         break;
                 }
             }
