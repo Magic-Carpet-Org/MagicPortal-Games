@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PortalSettings
   m_EditorClassIdentifier: 
   progressStep: 1
+  startEvenIfSessionCheckFails: 1
   magicGamesApiBaseUrl: https://game-portal-cyan.vercel.app/api
   magicGamesWebhookSecret: 0de42f8c-0c16-48ca-9242-5e20be5223e1
   magicGamesSendSessionUpdated: 0

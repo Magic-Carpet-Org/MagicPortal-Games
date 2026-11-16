@@ -129,6 +129,13 @@ Some games' original MagicGames code also posted `SESSION_UPDATED { sessionId }`
 after each restart. Tick `PortalSettings > Magic Games Send Session Updated` for those games
 (Loopstruck) to keep that behaviour. Off by default.
 
+### If the portal rejects the session
+
+By default `PortalManager.WhenReady` reports `ok = false` when the portal's `/game/init` refuses
+the session, so a loading screen can show an error (TheGap's "Network Error!").
+Tick `PortalSettings > Start Even If Session Check Fails` to start the game anyway: the failure is
+logged as a warning and scores are still attempted, but the portal may not save them.
+
 ### Testing MagicGames from the Editor
 
 Put a real MagicGames session id in `PortalSettings > Editor Test Session Id`.

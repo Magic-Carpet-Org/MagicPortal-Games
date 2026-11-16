@@ -19,6 +19,9 @@ namespace Kilimanjaro.Portals
         [Tooltip("Live score is sent to the portal at most once per this many points.")]
         public int progressStep = 50;
 
+        [Tooltip("If the portal rejects the session (GET /game/init fails), still let the game start: PortalManager.WhenReady reports ok. The failure is logged and scores are still attempted, but the portal may not save them. Off = a loading screen using WhenReady can show its error.")]
+        public bool startEvenIfSessionCheckFails = false;
+
         [Header("MagicGames")]
         public string magicGamesApiBaseUrl = "https://game-portal-cyan.vercel.app/api";
 

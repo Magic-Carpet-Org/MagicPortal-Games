@@ -259,6 +259,13 @@ namespace Kilimanjaro.Portals
             if (isReady) return;
 
             isReady = true;
+
+            if (!ok && settings.startEvenIfSessionCheckFails)
+            {
+                Debug.LogWarning("[PortalManager] Session check failed on " + current.Name + " - starting anyway (PortalSettings > Start Even If Session Check Fails). Scores may not be saved by the portal.");
+                ok = true;
+            }
+
             readyOk = ok;
 
             Debug.Log("[PortalManager] Ready on " + current.Name + (ok ? "" : " (session rejected)"));
