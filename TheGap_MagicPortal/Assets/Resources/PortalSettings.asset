@@ -15,7 +15,14 @@ MonoBehaviour:
   progressStep: 1
   magicGamesApiBaseUrl: https://game-portal-cyan.vercel.app/api
   magicGamesWebhookSecret: 0de42f8c-0c16-48ca-9242-5e20be5223e1
-  editorTestSessionId: a7c3f92c-a19e-4fdb-8ceb-a866cefd468b
+  magicGamesSendSessionUpdated: 0
+  editorTestSessionId: 
+  otherMagicGamesServers:
+  - name: Kick
+    hostContains: kick
+    apiBaseUrl: https://www.kick.com.ng/api
+    webhookSecret: 7ab64efbfb83cd1683e6f17b22b9fb35dfabdc2a5453649c59362d921987e2b4
+  editorServer: 
   enableLagosLife: 1
   lagosLifeClaimUrl: /api/lagos-claim
   editorSimulatePurchases: 0

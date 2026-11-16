@@ -33,7 +33,8 @@ namespace Kilimanjaro.Portals
             }
         }
 
-        public string Name { get { return "MagicGames"; } }
+        // "MagicGames", or e.g. "Kick" when PortalSettings picked another server on the same API.
+        public string Name { get { return api != null ? api.ServerName : "MagicGames"; } }
         public PortalPlayer Player { get { return player; } }
 
 #pragma warning disable 67 // MagicGames has no pause/resume messages

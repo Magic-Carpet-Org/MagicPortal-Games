@@ -89,17 +89,45 @@ PortalKit ships that server as a Vercel function:
    Vercel deployment (next to `index.html` and `vercel.json`). Unity ignores the `Server~` folder.
 2. In Vercel > Project > Settings > Environment Variables add:
    - `LAGOS_SECRET` = your Lagos Life secret (`vtr_test_...` now, `vtr_live_...` after approval)
-   - `LAGOS_PRODUCTS` = the product ids this game sells, comma-separated (e.g. `second_chance`)
+   - `LAGOS_PRODUCTS` = the product ids this game sells, comma-separated (e.g. `second_chance`),
+     or a prefix with `*` for a family (e.g. `ball_*` for ball_1, ball_2, ...)
    Redeploy after changing them.
 3. Create the same product ids in the Lagos Life developer dashboard (price ₦100-₦50,000).
 4. `PortalSettings > Lagos Life Claim Url` defaults to `/api/lagos-claim` - leave it unless the
    server lives somewhere else.
+
+One-off products: if the player already owns one (e.g. their save was wiped), Lagos Life won't
+charge again; `Purchase()` then succeeds with `result.alreadyOwned = true` - grant it the same way.
 
 Purchases that were paid but not delivered (reload, network drop, server down) are kept and
 delivered on the next `Purchase()` of the same product without charging again.
 
 Editor: tick `PortalSettings > Editor Simulate Purchases` to make purchases available and succeed
 after 1 second in Play mode (no money involved). Never used in builds.
+
+### Kick (and other portals on the MagicGames API)
+
+Kick runs the same API as MagicGames on its own server. One build serves both:
+add an entry under `PortalSettings > Other Magic Games Servers`:
+
+| Field | Example |
+|---|---|
+| Name | `Kick` |
+| Host Contains | `kick` - matches a deployment like `thegap-kick-build.vercel.app` |
+| Api Base Url | Kick's base URL for `/game/init` and `/game/match/complete` |
+| Webhook Secret | this game's secret on Kick |
+
+The game uses the first entry whose *Host Contains* text appears in the address it's hosted at,
+otherwise MagicGames. Deploy the same build to a Vercel project whose address contains `kick`
+for Kick, and to the MagicGames one for MagicGames. The console logs which server it picked:
+`[MagicGamesApi] Using Kick server: ...` and `[PortalManager] Portal: Kick`.
+In the Editor, set `PortalSettings > Editor Server` to `Kick` (plus a Kick `Editor Test Session Id`) to test against Kick.
+
+### MagicGames SESSION_UPDATED
+
+Some games' original MagicGames code also posted `SESSION_UPDATED { sessionId }` to the portal
+after each restart. Tick `PortalSettings > Magic Games Send Session Updated` for those games
+(Loopstruck) to keep that behaviour. Off by default.
 
 ### Testing MagicGames from the Editor
 

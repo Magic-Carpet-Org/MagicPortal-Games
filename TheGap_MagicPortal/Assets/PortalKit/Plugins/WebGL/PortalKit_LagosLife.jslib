@@ -225,7 +225,7 @@ mergeInto(LibraryManager.library, {
 		var productId = UTF8ToString(productIdPtr);
 		var claimUrl = UTF8ToString(claimUrlPtr);
 
-		function done(ok, code)
+		function done(ok, code, owned)
 		{
 			window.__llBuying = false;
 			if (window.__llReportUnclaimed) window.__llReportUnclaimed();
@@ -233,7 +233,8 @@ mergeInto(LibraryManager.library, {
 			window.__llSend("OnLagosPurchaseResult", JSON.stringify({
 				success: ok,
 				productId: productId,
-				error: ok ? "" : (code || "error")
+				error: ok ? "" : (code || "error"),
+				alreadyOwned: !!owned
 			}));
 		}
 
@@ -276,7 +277,13 @@ mergeInto(LibraryManager.library, {
 			done(true, "");
 		}).catch(function (err)
 		{
-			done(false, err && err.code ? err.code : "error");
+			var code = err && err.code ? err.code : "error";
+
+			// One-off product the player already bought (e.g. their save was wiped):
+			// Lagos Life refuses to charge again, so give it back for free.
+			if (code === "owned") { done(true, "", true); return; }
+
+			done(false, code);
 		});
 	},
 

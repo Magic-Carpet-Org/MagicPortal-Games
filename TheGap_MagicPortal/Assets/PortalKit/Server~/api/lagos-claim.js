@@ -12,7 +12,8 @@
 //
 // Vercel > Project > Settings > Environment Variables:
 //   LAGOS_SECRET    your Lagos Life secret (vtr_test_... while testing, vtr_live_... after approval)
-//   LAGOS_PRODUCTS  comma-separated product ids this game sells, e.g. "second_chance"
+//   LAGOS_PRODUCTS  comma-separated product ids this game sells, e.g. "second_chance",
+//                   or a prefix with * for a family of products, e.g. "ball_*"
 
 const API = "https://lagoslife.app/api/games/v1";
 
@@ -21,6 +22,12 @@ function products() {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+// Exact ids, or a prefix ending in * (e.g. "ball_*" matches ball_1, ball_2 ...).
+function isOurProduct(productId) {
+  if (typeof productId !== "string" || !productId) return false;
+  return products().some((p) => (p.endsWith("*") ? productId.startsWith(p.slice(0, -1)) : productId === p));
 }
 
 async function lagos(path, secret, body) {
@@ -105,7 +112,7 @@ module.exports = async function handler(req, res) {
 
     // Unknown product = our configuration is wrong; keep it claimable (not final)
     // so fixing LAGOS_PRODUCTS lets the player still receive what they paid for.
-    if (!products().includes(productId)) return reply(res, 400, { ok: false, error: "unknown_product" });
+    if (!isOurProduct(productId)) return reply(res, 400, { ok: false, error: "unknown_product" });
 
     // 3. Mark delivered (safe to repeat per Lagos Life docs).
     const d = await lagos("/purchases/" + encodeURIComponent(purchaseId) + "/deliver", secret, {});

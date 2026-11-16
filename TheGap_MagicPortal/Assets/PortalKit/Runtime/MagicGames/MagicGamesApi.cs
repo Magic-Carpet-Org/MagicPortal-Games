@@ -51,13 +51,20 @@ namespace Kilimanjaro.Portals
     public class MagicGamesApi : MonoBehaviour
     {
         private PortalSettings settings;
+        private PortalSettings.MagicGamesServer server;
 
-        public bool HasSecret { get { return !string.IsNullOrEmpty(settings.magicGamesWebhookSecret); } }
+        /// <summary>"MagicGames", or the matching entry of PortalSettings.otherMagicGamesServers (e.g. "Kick").</summary>
+        public string ServerName { get { return server.name; } }
+
+        public bool HasSecret { get { return !string.IsNullOrEmpty(server.webhookSecret); } }
 
         private void Awake()
         {
             settings = PortalSettings.Load();
+            server = settings.ResolveMagicGamesServer(Application.absoluteURL);
             DontDestroyOnLoad(gameObject);
+
+            Debug.Log("[MagicGamesApi] Using " + server.name + " server: " + server.apiBaseUrl);
         }
 
         public void InitializeGame(string sessionId, Action<bool, MagicGamesInitResponse> onComplete)
@@ -79,7 +86,7 @@ namespace Kilimanjaro.Portals
 
         private IEnumerator InitRoutine(string sessionId, Action<bool, MagicGamesInitResponse> onComplete)
         {
-            string endpoint = settings.magicGamesApiBaseUrl + "/game/init?sessionId=" + Uri.EscapeDataString(sessionId);
+            string endpoint = server.apiBaseUrl + "/game/init?sessionId=" + Uri.EscapeDataString(sessionId);
 
             using (UnityWebRequest request = UnityWebRequest.Get(endpoint))
             {
@@ -101,7 +108,7 @@ namespace Kilimanjaro.Portals
 
         private IEnumerator SubmitRoutine(string sessionId, int score, Action<bool, MagicGamesMatchResponse> onComplete)
         {
-            string endpoint = settings.magicGamesApiBaseUrl + "/game/match/complete";
+            string endpoint = server.apiBaseUrl + "/game/match/complete";
 
             // Built by hand (no spaces) so the signature matches the portal's samples exactly.
             string json = "{\"sessionId\":\"" + sessionId + "\",\"score\":" + score + "}";
@@ -111,7 +118,7 @@ namespace Kilimanjaro.Portals
                 request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
                 request.downloadHandler = new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
-                request.SetRequestHeader("X-Portal-Signature", Sign(json, settings.magicGamesWebhookSecret));
+                request.SetRequestHeader("X-Portal-Signature", Sign(json, server.webhookSecret));
 
                 yield return request.SendWebRequest();
 

@@ -199,7 +199,7 @@ namespace Kilimanjaro.Portals
         }
 
         [Serializable]
-        private class UnclaimedList { public string[] productIds; }
+        private class UnclaimedList { public string[] productIds = new string[0]; }
 
         public void OnLagosUnclaimed(string json)
         {

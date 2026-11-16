@@ -82,6 +82,17 @@ namespace Kilimanjaro.Portals
             Debug.Log("[MagicGamesBridge] RESTART_ACK (no-op outside WebGL build)");
 #endif
 
+            if (PortalSettings.Load().magicGamesSendSessionUpdated && !string.IsNullOrEmpty(sessionId))
+            {
+                string safeId = sessionId.Replace("\\", "\\\\").Replace("\"", "\\\"");
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+                PKMG_SendMessage("{\"type\":\"SESSION_UPDATED\",\"sessionId\":\"" + safeId + "\"}");
+#else
+                Debug.Log("[MagicGamesBridge] SESSION_UPDATED " + safeId + " (no-op outside WebGL build)");
+#endif
+            }
+
             if (RestartGameReceived != null) RestartGameReceived(sessionId);
         }
 

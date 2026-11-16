@@ -32,6 +32,12 @@ namespace Kilimanjaro.Portals
         /// </summary>
         public string error;
 
+        /// <summary>
+        /// True when success came from a one-off product the player already owns
+        /// (Lagos Life refused to charge twice). Grant it the same way.
+        /// </summary>
+        public bool alreadyOwned;
+
         public bool Cancelled { get { return error == "cancelled"; } }
     }
 
